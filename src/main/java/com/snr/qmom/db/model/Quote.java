@@ -26,8 +26,7 @@ public class Quote {
         this.dailyReturn = dailyReturn;
     }
 
-    public Quote(String symbol) {
-        this.symbol = symbol;
+    public Quote() {
     }
 
     public void setSymbol(String symbol) {

@@ -12,10 +12,17 @@ import java.util.Arrays;
  * Created by sajimathew on 2/13/17.
  */
 public class QmomArgs {
-   // protected static final Logger logger = LoggerFactory.getLogger(QmomArgs.class);
+    protected static final Logger logger = LoggerFactory.getLogger(QmomArgs.class);
 
-    @Parameter(names = {"--updateSymbols"}, required=true, description = "Update Symbols")
+    @Parameter(names = {"--updateSymbols"},  description = "Update Symbols")
     private String updateSymbols;
+
+    @Parameter(names = {"--downloadQuote", "-d"},  description = "downloadQuote")
+    private boolean downloadQuote;
+
+    @Parameter(names = {"--downloadSymbol", "-ds"},  description = "Download history for one symbol")
+    private String downloadSymbol;
+
 
     private final JCommander commander;
 
@@ -26,7 +33,7 @@ public class QmomArgs {
         try{
             this.commander.parse(args);
         }catch(Exception e){
-            //logger.error("Error while parsing command arguments : " + Arrays.toString(args), e);
+            logger.error("Error while parsing command arguments : " + Arrays.toString(args), e);
         }
     }
 
@@ -41,6 +48,22 @@ public class QmomArgs {
 
     public void setUpdateSymbols(String updateSymbols) {
         this.updateSymbols = updateSymbols;
+    }
+
+    public boolean isDownloadQuote() {
+        return downloadQuote;
+    }
+
+    public void setDownloadQuote(boolean downloadQuote) {
+        this.downloadQuote = downloadQuote;
+    }
+
+    public String getDownloadSymbol() {
+        return downloadSymbol;
+    }
+
+    public void setDownloadSymbol(String downloadSymbol) {
+        this.downloadSymbol = downloadSymbol;
     }
 }
 

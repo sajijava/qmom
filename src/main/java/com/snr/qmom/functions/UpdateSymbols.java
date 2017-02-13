@@ -3,6 +3,8 @@ package com.snr.qmom.functions;
 import com.opencsv.CSVReader;
 import com.snr.qmom.db.DBAccess;
 import com.snr.qmom.db.model.Equity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileReader;
@@ -15,7 +17,7 @@ import java.util.List;
  * Created by sajimathew on 2/13/17.
  */
 public class UpdateSymbols {
-    // protected static final Logger logger = LoggerFactory.getLogger(UpdateSymbols.class);
+     protected static final Logger logger = LoggerFactory.getLogger(UpdateSymbols.class);
 
 
 
