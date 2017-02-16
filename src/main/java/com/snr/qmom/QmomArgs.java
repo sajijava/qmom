@@ -23,6 +23,8 @@ public class QmomArgs {
     @Parameter(names = {"--downloadSymbol", "-ds"},  description = "Download history for one symbol")
     private String downloadSymbol;
 
+    @Parameter(names = {"--metric", "-m"},  description = "Calculate metrics yearly return and FID")
+    private boolean metric;
 
     private final JCommander commander;
 
@@ -64,6 +66,14 @@ public class QmomArgs {
 
     public void setDownloadSymbol(String downloadSymbol) {
         this.downloadSymbol = downloadSymbol;
+    }
+
+    public boolean isMetric() {
+        return metric;
+    }
+
+    public void setMetric(boolean metric) {
+        this.metric = metric;
     }
 }
 

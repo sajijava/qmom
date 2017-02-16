@@ -1,6 +1,7 @@
 package com.snr.qmom;
 
 import com.snr.qmom.functions.DownloadQuoteHistory;
+import com.snr.qmom.functions.Metrics;
 import com.snr.qmom.functions.UpdateSymbols;
 import org.apache.commons.lang3.StringUtils;
 
@@ -19,6 +20,8 @@ public class QmomMain {
             new DownloadQuoteHistory(arg.getDownloadSymbol());
         }else if(arg.isDownloadQuote()){
             new DownloadQuoteHistory();
+        }else if(arg.isMetric()){
+            new Metrics();
         }
     }
 

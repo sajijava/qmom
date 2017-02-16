@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by sajimathew on 2/13/17.
@@ -18,6 +19,25 @@ public class DBAccess {
 
     private final Connection conn;
     private static DBAccess dbAccess = null;
+    private String insertQuoteStmt = "REPLACE INTO quote(symbol,date,open,high,low,close,volume,dailyReturn) values(?,?,?,?,?,?,?,?)";
+    private String updateDateStmt = "REPLACE INTO equity_dates(symbol,latest_date,earliest_date) values(?,?,?)";
+    private String updateValidEqty = "UPDATE equities SET is_valid = false WHERE symbol = ?";
+
+
+    PreparedStatement updateValidEqtyPreparedStmt;
+    PreparedStatement updateDatePreparedStmt;
+    PreparedStatement insertQuotePrepareStmt;
+    PreparedStatement getValidEqtyPrepareStmt;
+
+
+    private  DBAccess() throws SQLException, ClassNotFoundException {
+
+        conn = getDBConnection();
+        insertQuotePrepareStmt = conn.prepareStatement(insertQuoteStmt);
+        updateDatePreparedStmt = conn.prepareStatement(updateDateStmt);
+        updateValidEqtyPreparedStmt = conn.prepareStatement(updateValidEqty);
+        getValidEqtyPrepareStmt = conn.prepareStatement("select symbol from equities where is_valid is true");
+    }
 
     public static DBAccess getInstance(){
         if(dbAccess == null){
@@ -32,10 +52,6 @@ public class DBAccess {
         return dbAccess;
     }
 
-    private  DBAccess() throws SQLException, ClassNotFoundException {
-
-        conn = getDBConnection();
-    }
 
     private final Connection getDBConnection() throws SQLException, ClassNotFoundException {
         Class.forName("com.mysql.jdbc.Driver");
@@ -59,8 +75,8 @@ public class DBAccess {
         }
     }
     public List<String> getExistingSymbols() throws SQLException {
-        PreparedStatement stmt = conn.prepareStatement("select symbol from equities where is_valid is true");
-        ResultSet rs = stmt.executeQuery();
+
+        ResultSet rs = getValidEqtyPrepareStmt.executeQuery();
         List<String> symList = new ArrayList<String>();
         while(rs.next()){
             symList.add(rs.getString(1));
@@ -70,10 +86,9 @@ public class DBAccess {
 
     }
     public void updateInvalidEquity(String symbol) throws SQLException {
-        String insertStmt = "UPDATE equities SET is_value = false WHERE symbol = ?";
-        PreparedStatement stmt = conn.prepareStatement(insertStmt);
-        stmt.setString(1,symbol);
-        stmt.execute();
+
+        updateValidEqtyPreparedStmt.setString(1,symbol);
+        updateValidEqtyPreparedStmt.execute();
     }
     public void insertQuote(List<Quote> quoteList) throws SQLException {
         for(Quote quote : quoteList){
@@ -81,32 +96,55 @@ public class DBAccess {
         }
     }
     public void insertQuote(Quote quote) throws SQLException {
-        String insertStmt = "REPLACE INTO quote(symbol,date,open,high,low,close,volume,dailyReturn) values(?,?,?,?,?,?,?,?)";
-        PreparedStatement stmt = conn.prepareStatement(insertStmt);
 
-        stmt.setString(1,quote.getSymbol());
-        stmt.setDate(2,quote.getDate());
-        stmt.setDouble(3,quote.getOpen());
-        stmt.setDouble(4,quote.getHigh());
-        stmt.setDouble(5,quote.getLow());
-        stmt.setDouble(6,quote.getClose());
-        stmt.setLong(7,quote.getVolume());
-        stmt.setDouble(8,quote.getDailyReturn());
 
-        stmt.execute();
+        insertQuotePrepareStmt.setString(1,quote.getSymbol());
+        insertQuotePrepareStmt.setDate(2,quote.getDate());
+        insertQuotePrepareStmt.setDouble(3,quote.getOpen());
+        insertQuotePrepareStmt.setDouble(4,quote.getHigh());
+        insertQuotePrepareStmt.setDouble(5,quote.getLow());
+        insertQuotePrepareStmt.setDouble(6,quote.getClose());
+        insertQuotePrepareStmt.setLong(7,quote.getVolume());
+        insertQuotePrepareStmt.setDouble(8,quote.getDailyReturn());
+
+        insertQuotePrepareStmt.execute();
 
     }
     public void updateEquityDates(String symbol, Date latestDate, Date earliestDate) throws SQLException {
-        String insertStmt = "REPLACE INTO equity_dates(symbol,latest_date,earliest_date) values(?,?,?)";
 
-        PreparedStatement stmt = conn.prepareStatement(insertStmt);
 
-        stmt.setString(1,symbol);
-        stmt.setDate(2,latestDate);
-        stmt.setDate(3,earliestDate);
+        updateDatePreparedStmt.setString(1,symbol);
+        updateDatePreparedStmt.setDate(2,latestDate);
+        updateDatePreparedStmt.setDate(3,earliestDate);
 
-        stmt.execute();
+        updateDatePreparedStmt.execute();
 
+    }
+    public List<Quote> getQuote(String symbol) throws SQLException {
+
+        String getQuoteStmt = "SELECT symbol,date,open,high,low,close,volume,dailyReturn FROM quote WHERE symbol = ?";
+        PreparedStatement getQuotePrepareStmt = conn.prepareStatement(getQuoteStmt);
+
+        List<Quote> quoteList = new ArrayList<Quote>();
+        getQuotePrepareStmt.setString(1,symbol);
+
+        ResultSet rs = getQuotePrepareStmt.executeQuery();
+
+        while(rs.next()){
+            Quote q = new Quote();
+            q.setSymbol(rs.getString(1));
+            q.setDate(rs.getDate(2));
+            q.setOpen(rs.getDouble(3));
+            q.setHigh(rs.getDouble(4));
+            q.setLow(rs.getDouble(5));
+            q.setClose(rs.getDouble(6));
+            q.setVolume(rs.getLong(7));
+            q.setDailyReturn(rs.getDouble(8));
+
+            quoteList.add(q);
+        }
+        getQuotePrepareStmt.close();
+        return quoteList;
     }
 
 }
