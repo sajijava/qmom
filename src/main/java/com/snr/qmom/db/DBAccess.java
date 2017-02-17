@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 
@@ -125,11 +126,37 @@ public class DBAccess {
         String getQuoteStmt = "SELECT symbol,date,open,high,low,close,volume,dailyReturn FROM quote WHERE symbol = ?";
         PreparedStatement getQuotePrepareStmt = conn.prepareStatement(getQuoteStmt);
 
-        List<Quote> quoteList = new ArrayList<Quote>();
+
         getQuotePrepareStmt.setString(1,symbol);
 
         ResultSet rs = getQuotePrepareStmt.executeQuery();
 
+        List<Quote> quoteList = makeQuoteList(rs);
+        getQuotePrepareStmt.close();
+        return quoteList;
+    }
+
+    public List<Quote> getQuoteFromDate(String symbol,Date date) throws SQLException {
+
+        String getQuoteStmt = "select * from qmom.quote where symbol = ?  and MONTH(date) >= ? and YEAR(date) >= ? order by date";
+        PreparedStatement getQuotePrepareStmt = conn.prepareStatement(getQuoteStmt);
+
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+
+        getQuotePrepareStmt.setString(1,symbol);
+        getQuotePrepareStmt.setInt(2,cal.get(Calendar.MONTH));
+        getQuotePrepareStmt.setInt(3,cal.get(Calendar.YEAR));
+
+        ResultSet rs = getQuotePrepareStmt.executeQuery();
+        List<Quote> quoteList = makeQuoteList(rs);
+        getQuotePrepareStmt.close();
+
+        return quoteList;
+    }
+
+    private List<Quote> makeQuoteList(ResultSet rs) throws SQLException {
+        List<Quote> quoteList = new ArrayList<Quote>();
         while(rs.next()){
             Quote q = new Quote();
             q.setSymbol(rs.getString(1));
@@ -143,8 +170,23 @@ public class DBAccess {
 
             quoteList.add(q);
         }
-        getQuotePrepareStmt.close();
         return quoteList;
+    }
+    public void insertMetrics(String symbol, double yearlyReturns, double fid) throws SQLException {
+
+
+        String insertMetricsStmt = "REPLACE INTO metrics(symbol,yearlyReturn,fid) values(?,?,?)";
+        PreparedStatement insertMetricsPrepareStmt = conn.prepareStatement(insertMetricsStmt);
+
+        insertMetricsPrepareStmt.setString(1,symbol);
+        insertMetricsPrepareStmt.setDouble(2,yearlyReturns);
+        insertMetricsPrepareStmt.setDouble(3,fid);
+
+        insertMetricsPrepareStmt.execute();
+
+
+        insertMetricsPrepareStmt.close();
+
     }
 
 }

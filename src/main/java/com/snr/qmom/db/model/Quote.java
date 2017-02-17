@@ -13,7 +13,7 @@ public class Quote {
     private double low;
     private double close;
     private long volume;
-    private double dailyReturn;
+    private double dailyReturn = 1.0d;
 
     public Quote(String symbol, Date date, double open, double high, double low, double close, long volume, double dailyReturn) {
         this.symbol = symbol;
