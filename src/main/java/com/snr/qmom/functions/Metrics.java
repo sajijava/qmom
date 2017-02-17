@@ -40,7 +40,7 @@ public class Metrics {
                         yearlyReturns *= monthlyReturns.get(months.get(i));
                     }
                     yearlyReturns = yearlyReturns - 1;
-                    double fid = getFID(quoteList);
+                    double fid = getFIP(quoteList,(yearlyReturns > 0 ? 1:(yearlyReturns < 0)?-1:0));
                     logger.debug("{} = {} ({}), FID = {}", symbol, yearlyReturns, yearlyReturns*100,fid);
                     DBAccess.getInstance().insertMetrics(symbol,yearlyReturns,fid);
                 }
@@ -49,19 +49,22 @@ public class Metrics {
             logger.error("{}",e);
         }
     }
-    public double getFID(List<Quote> quoteList){
+    public double getFIP(List<Quote> quoteList,int sign){
         double fid = 0.0d;
+
         Map<String,AtomicInteger> counter = new HashMap<>();
+
         counter.put("U",new AtomicInteger());
         counter.put("D",new AtomicInteger());
-        quoteList.stream().forEach(q -> {
-            if(q.getClose() > q.getOpen())
-                counter.get("U").incrementAndGet();
-            else if(q.getClose() < q.getOpen())
-                counter.get("D").incrementAndGet();
 
-        });
+       quoteList.stream().forEach(q -> {
+           if(q.getDailyReturn() > 0)
+               counter.get("U").incrementAndGet();
+           else if(q.getDailyReturn() < 0)
+               counter.get("D").incrementAndGet();
 
-        return (double)counter.get("U").get()/(double)counter.get("D").get();
+       });
+
+        return sign * (((double)counter.get("D").get()/quoteList.size()) - ((double)counter.get("U").get()/quoteList.size()));
     }
 }
