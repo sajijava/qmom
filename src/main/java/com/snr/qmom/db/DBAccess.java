@@ -1,43 +1,31 @@
 package com.snr.qmom.db;
 
 import com.snr.qmom.db.model.Equity;
+import com.snr.qmom.db.model.Metrics;
 import com.snr.qmom.db.model.Quote;
 import com.snr.qmom.functions.DownloadQuoteHistory;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Map;
+import java.sql.Date;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * Created by sajimathew on 2/13/17.
  */
 public class DBAccess {
     protected static final Logger logger = LoggerFactory.getLogger(DBAccess.class);
+    private static final SimpleDateFormat ddMMyyyy = new SimpleDateFormat("dd/MM/yyyy");
 
     private final Connection conn;
     private static DBAccess dbAccess = null;
-    private String insertQuoteStmt = "REPLACE INTO quote(symbol,date,open,high,low,close,volume,dailyReturn) values(?,?,?,?,?,?,?,?)";
-    private String updateDateStmt = "REPLACE INTO equity_dates(symbol,latest_date,earliest_date) values(?,?,?)";
-    private String updateValidEqty = "UPDATE equities SET is_valid = false WHERE symbol = ?";
-
-
-    PreparedStatement updateValidEqtyPreparedStmt;
-    PreparedStatement updateDatePreparedStmt;
-    PreparedStatement insertQuotePrepareStmt;
-    PreparedStatement getValidEqtyPrepareStmt;
-
 
     private  DBAccess() throws SQLException, ClassNotFoundException {
 
         conn = getDBConnection();
-        insertQuotePrepareStmt = conn.prepareStatement(insertQuoteStmt);
-        updateDatePreparedStmt = conn.prepareStatement(updateDateStmt);
-        updateValidEqtyPreparedStmt = conn.prepareStatement(updateValidEqty);
-        getValidEqtyPrepareStmt = conn.prepareStatement("select symbol from equities where is_valid is true");
     }
 
     public static DBAccess getInstance(){
@@ -77,19 +65,26 @@ public class DBAccess {
     }
     public List<String> getExistingSymbols() throws SQLException {
 
+        PreparedStatement getValidEqtyPrepareStmt = conn.prepareStatement("select symbol from equities where is_valid is true");
+
         ResultSet rs = getValidEqtyPrepareStmt.executeQuery();
         List<String> symList = new ArrayList<String>();
         while(rs.next()){
             symList.add(rs.getString(1));
         }
 
+        getValidEqtyPrepareStmt.close();
         return symList;
 
     }
     public void updateInvalidEquity(String symbol) throws SQLException {
 
+        String updateValidEqty = "UPDATE equities SET is_valid = false WHERE symbol = ?";
+
+        PreparedStatement updateValidEqtyPreparedStmt = conn.prepareStatement(updateValidEqty);
         updateValidEqtyPreparedStmt.setString(1,symbol);
         updateValidEqtyPreparedStmt.execute();
+        updateValidEqtyPreparedStmt.close();
     }
     public void insertQuote(List<Quote> quoteList) throws SQLException {
         for(Quote quote : quoteList){
@@ -98,7 +93,9 @@ public class DBAccess {
     }
     public void insertQuote(Quote quote) throws SQLException {
 
+        String insertQuoteStmt = "REPLACE INTO quote(symbol,date,open,high,low,close,volume,dailyReturn) values(?,?,?,?,?,?,?,?)";
 
+        PreparedStatement insertQuotePrepareStmt = conn.prepareStatement(insertQuoteStmt);
         insertQuotePrepareStmt.setString(1,quote.getSymbol());
         insertQuotePrepareStmt.setDate(2,quote.getDate());
         insertQuotePrepareStmt.setDouble(3,quote.getOpen());
@@ -109,16 +106,21 @@ public class DBAccess {
         insertQuotePrepareStmt.setDouble(8,quote.getDailyReturn());
 
         insertQuotePrepareStmt.execute();
+        insertQuotePrepareStmt.close();
 
     }
     public void updateEquityDates(String symbol, Date latestDate, Date earliestDate) throws SQLException {
 
+        String updateDateStmt = "REPLACE INTO equity_dates(symbol,latest_date,earliest_date) values(?,?,?)";
+
+        PreparedStatement updateDatePreparedStmt = conn.prepareStatement(updateDateStmt);
 
         updateDatePreparedStmt.setString(1,symbol);
         updateDatePreparedStmt.setDate(2,latestDate);
         updateDatePreparedStmt.setDate(3,earliestDate);
 
         updateDatePreparedStmt.execute();
+        updateDatePreparedStmt.close();
 
     }
     public List<Quote> getQuote(String symbol) throws SQLException {
@@ -172,21 +174,79 @@ public class DBAccess {
         }
         return quoteList;
     }
-    public void insertMetrics(String symbol, double yearlyReturns, double fid) throws SQLException {
+    public void insertMomentum(Metrics metrics) throws SQLException {
 
 
-        String insertMetricsStmt = "REPLACE INTO metrics(symbol,yearlyReturn,fid) values(?,?,?)";
+        String insertMetricsStmt = "REPLACE INTO metrics(symbol,yearlyReturn,yearlyFip,halfYearlyReturn,halfYearlyFip,quartelyReturn,quartelyFip,fourMonthReturn,fourMonthFip,lastUpdate) " +
+                "values(?,?,?,?,?,?,?,?,?,?)";
         PreparedStatement insertMetricsPrepareStmt = conn.prepareStatement(insertMetricsStmt);
 
-        insertMetricsPrepareStmt.setString(1,symbol);
-        insertMetricsPrepareStmt.setDouble(2,yearlyReturns);
-        insertMetricsPrepareStmt.setDouble(3,fid);
+        insertMetricsPrepareStmt.setString(1,metrics.getSymbol());
+        insertMetricsPrepareStmt.setDouble(2,metrics.getYearlyReturn());
+        insertMetricsPrepareStmt.setDouble(3,metrics.getYearlyFip());
+        insertMetricsPrepareStmt.setDouble(4,metrics.getHalfYrReturns());
+        insertMetricsPrepareStmt.setDouble(5,metrics.getHalfYrFip());
+        insertMetricsPrepareStmt.setDouble(6,metrics.getQuarterlyReturns());
+        insertMetricsPrepareStmt.setDouble(7,metrics.getQuarterlyFip());
+        insertMetricsPrepareStmt.setDouble(8,metrics.getFourMonthReturns());
+        insertMetricsPrepareStmt.setDouble(9,metrics.getFourMonthFip());
+        insertMetricsPrepareStmt.setTimestamp(10,metrics.getLastUpdated());
 
         insertMetricsPrepareStmt.execute();
-
 
         insertMetricsPrepareStmt.close();
 
     }
 
+    public Map<String,Date> getLatestDateForSymbol(String symbol) throws SQLException {
+
+        String getLatestDates = "SELECT symbol,latest_date FROM equity_dates order by symbol";
+        PreparedStatement getLatestDtPrepareStmt = conn.prepareStatement(getLatestDates);
+
+        Map<String,Date> latestDates  = new HashMap<>();
+
+        getLatestDtPrepareStmt.setString(1,symbol);
+
+        ResultSet rs = getLatestDtPrepareStmt.executeQuery();
+        while(rs.next()){
+            latestDates.put(rs.getString(1),rs.getDate(2));
+        }
+
+        getLatestDtPrepareStmt.close();
+        return latestDates;
+    }
+    public List<String> runQuery(String sql) throws SQLException {
+        List<String> results = new ArrayList<>();
+        PreparedStatement runSql = conn.prepareStatement(sql);
+        ResultSet rs = runSql.executeQuery();
+        ResultSetMetaData rsMeta = rs.getMetaData();
+        List<String> labels = new ArrayList<>();
+        for(int i = 1; i <= rsMeta.getColumnCount();i++){
+            labels.add(rsMeta.getColumnLabel(i));
+        }
+        results.add(StringUtils.join(labels,","));
+        while(rs.next()){
+            List<String> row = new ArrayList<>();
+            for(int i = 1; i <= rsMeta.getColumnCount();i++){
+                switch(rsMeta.getColumnType(i)){
+                    case Types.DECIMAL:
+                        row.add(new Double(rs.getDouble(i)).toString());
+                        break;
+                    case Types.DATE:
+                        row.add(ddMMyyyy.format(rs.getDate(i)));
+                        break;
+                    case Types.TIMESTAMP:
+                        row.add(ddMMyyyy.format(rs.getTimestamp(i)));
+                        break;
+                    case Types.BIT:
+                        row.add(rs.getBoolean(i)?"True":"False");
+                        break;
+                    default:
+                        row.add((String) rs.getObject(i));
+                }
+            }
+            results.add(StringUtils.join(row,","));
+        }
+        return results;
+    }
 }

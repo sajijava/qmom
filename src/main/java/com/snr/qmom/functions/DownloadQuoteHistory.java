@@ -18,6 +18,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by sajimathew on 2/13/17.
@@ -28,7 +29,8 @@ public class DownloadQuoteHistory {
     protected static final Logger logger = LoggerFactory.getLogger(DownloadQuoteHistory.class);
     private static final SimpleDateFormat histDt = new SimpleDateFormat("dd-MMM-yy");
 
-    private static final String HISTORY_URL = "https://www.google.com/finance/historical?output=csv&q=%s";
+    private static final String GOOGLE_HISTORY_URL = "https://www.google.com/finance/historical?output=csv&q=%s";
+    private static final String YAHOO_HIST_URL = "http://chart.finance.yahoo.com/table.csv?s=RCII&a=1&b=17&c=2015&d=1&e=17&f=2016&g=d&ignore=.csv";
     public DownloadQuoteHistory() {
         logger.info("Beginning quote history downloads...");
         try {
@@ -65,7 +67,8 @@ public class DownloadQuoteHistory {
 
         logger.info("Fetching history for {}",symbol);
 
-        URL url = new URL(String.format(HISTORY_URL,symbol));
+        Map<String, Date> latestDates = DBAccess.getInstance().getLatestDateForSymbol(symbol);
+        URL url = new URL(String.format(YAHOO_HIST_URL,symbol));
         HttpsURLConnection httpsConn = null;
         try {
             httpsConn = (HttpsURLConnection)url.openConnection();

@@ -23,8 +23,14 @@ public class QmomArgs {
     @Parameter(names = {"--downloadSymbol", "-ds"},  description = "Download history for one symbol")
     private String downloadSymbol;
 
-    @Parameter(names = {"--metric", "-m"},  description = "Calculate metrics yearly return and FID")
-    private boolean metric;
+    @Parameter(names = {"--momentum", "-m"},  description = "Calculate momentum yearly return and FID")
+    private boolean momentum;
+
+    @Parameter(names = {"--report", "-r"},  description = "Fetch report based on the given SQL query.")
+    private String report;
+
+
+
 
     private final JCommander commander;
 
@@ -68,12 +74,20 @@ public class QmomArgs {
         this.downloadSymbol = downloadSymbol;
     }
 
-    public boolean isMetric() {
-        return metric;
+    public boolean isMomentum() {
+        return momentum;
     }
 
-    public void setMetric(boolean metric) {
-        this.metric = metric;
+    public void setMomentum(boolean momentum) {
+        this.momentum = momentum;
+    }
+
+    public String getReport() {
+        return report;
+    }
+
+    public void setReport(String report) {
+        this.report = report;
     }
 }
 
