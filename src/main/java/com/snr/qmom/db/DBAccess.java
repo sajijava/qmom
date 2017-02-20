@@ -91,6 +91,23 @@ public class DBAccess {
             insertQuote(quote);
         }
     }
+    public void tagLatestQuote(Quote quote) throws SQLException {
+        String clearLatesFlag = "update quote set latestQuote = false where symbol = ?";
+        PreparedStatement clearStmt = conn.prepareStatement(clearLatesFlag);
+        clearStmt.setString(1,quote.getSymbol());
+        clearStmt.execute();
+        clearStmt.close();
+
+        String updateLatesFlag = "update quote set latestQuote = true where symbol = ? and date = ?";
+        PreparedStatement updateLatestStmt = conn.prepareStatement(updateLatesFlag);
+        updateLatestStmt.setString(1,quote.getSymbol());
+        updateLatestStmt.setDate(2,quote.getDate());
+
+        updateLatestStmt.execute();
+        updateLatestStmt.close();
+
+
+    }
     public void insertQuote(Quote quote) throws SQLException {
 
         String insertQuoteStmt = "REPLACE INTO quote(symbol,date,open,high,low,close,volume,dailyReturn) values(?,?,?,?,?,?,?,?)";
@@ -205,7 +222,7 @@ public class DBAccess {
 
         Map<String,Date> latestDates  = new HashMap<>();
 
-        getLatestDtPrepareStmt.setString(1,symbol);
+        //getLatestDtPrepareStmt.setString(1,symbol);
 
         ResultSet rs = getLatestDtPrepareStmt.executeQuery();
         while(rs.next()){

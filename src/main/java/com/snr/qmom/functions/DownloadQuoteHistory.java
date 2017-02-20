@@ -68,7 +68,7 @@ public class DownloadQuoteHistory {
         logger.info("Fetching history for {}",symbol);
 
         Map<String, Date> latestDates = DBAccess.getInstance().getLatestDateForSymbol(symbol);
-        URL url = new URL(String.format(YAHOO_HIST_URL,symbol));
+        URL url = new URL(String.format(GOOGLE_HISTORY_URL,symbol));
         HttpsURLConnection httpsConn = null;
         try {
             httpsConn = (HttpsURLConnection)url.openConnection();
@@ -88,6 +88,7 @@ public class DownloadQuoteHistory {
             if(!quoteHist.isEmpty()) {
                 calculateDailyReturns(quoteHist);
                 DBAccess.getInstance().insertQuote(quoteHist);
+                DBAccess.getInstance().tagLatestQuote(quoteHist.get(0));
                 DBAccess.getInstance().updateEquityDates(symbol, quoteHist.get(0).getDate(), quoteHist.get(quoteHist.size() - 1).getDate());
             }else{
                 logger.error("*** No history found for {}",symbol);
