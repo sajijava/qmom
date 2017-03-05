@@ -23,11 +23,14 @@ public class QmomArgs {
     @Parameter(names = {"--downloadSymbol", "-ds"},  description = "Download history for one symbol")
     private String downloadSymbol;
 
-    @Parameter(names = {"--momentum", "-m"},  description = "Calculate momentum yearly return and FID")
+    @Parameter(names = {"--momentum", "-m"},  description = "Calculate momentum yearly return and FIP")
     private boolean momentum;
 
     @Parameter(names = {"--report", "-r"},  description = "Fetch report based on the given SQL query.")
     private String report;
+
+    @Parameter(names = {"--checkoption", "-ck"},  description = "Check option price. By default it will check for  6mnth expire, 1 price point apart. e.g. <file.csv>~~Sym=C1~Pr=c2")
+    private String checkOption;
 
 
 
@@ -88,6 +91,14 @@ public class QmomArgs {
 
     public void setReport(String report) {
         this.report = report;
+    }
+
+    public String getCheckOption() {
+        return checkOption;
+    }
+
+    public void setCheckOption(String checkOption) {
+        this.checkOption = checkOption;
     }
 }
 

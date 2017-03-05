@@ -1,9 +1,6 @@
 package com.snr.qmom;
 
-import com.snr.qmom.functions.DownloadQuoteHistory;
-import com.snr.qmom.functions.CalcMomentum;
-import com.snr.qmom.functions.Report;
-import com.snr.qmom.functions.UpdateSymbols;
+import com.snr.qmom.functions.*;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
@@ -25,7 +22,10 @@ public class QmomMain {
             new CalcMomentum();
         }else if(StringUtils.isNotEmpty(arg.getReport())){
             new Report(arg.getReport());
+        }else if(StringUtils.isNotEmpty(arg.getCheckOption())) {
+            new CheckOptionPrices(arg.getCheckOption());
         }
+
     }
 
 }
