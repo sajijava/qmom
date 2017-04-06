@@ -87,7 +87,9 @@ public class CalcMomentum {
     private double getCummulativeReturns(Map<Date,Double> monthlyReturns,List<Date> months ){
         double cummReturns = 1.0d;
         for (int i = 1; i < months.size(); i++) {
-            cummReturns *= monthlyReturns.get(months.get(i));
+            double  monthReturn = monthlyReturns.get(months.get(i));
+            if(monthReturn != 0)
+            cummReturns *= monthReturn;
         }
         cummReturns = cummReturns - 1;
         return cummReturns;

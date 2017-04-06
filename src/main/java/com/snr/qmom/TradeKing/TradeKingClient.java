@@ -1,8 +1,6 @@
 package com.snr.qmom.TradeKing;
 
 
-import com.snr.qmom.functions.CheckOptionPrices;
-import com.sun.deploy.net.URLEncoder;
 import org.scribe.builder.ServiceBuilder;
 import org.scribe.model.OAuthRequest;
 import org.scribe.model.Response;
@@ -11,8 +9,6 @@ import org.scribe.model.Verb;
 import org.scribe.oauth.OAuthService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.UnsupportedEncodingException;
 
 /**
  * Created by sajimathew on 2/19/17.

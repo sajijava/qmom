@@ -38,7 +38,6 @@ public class Calculations {
                 Calendar calP = Calendar.getInstance();
                 calP.setTime(sortedList.get(i - 1).getDate());
 
-
                 if (cal.get(Calendar.MONTH) != calP.get(Calendar.MONTH)) {
                     firstDayQuote.add(sortedList.get(i));
                 }

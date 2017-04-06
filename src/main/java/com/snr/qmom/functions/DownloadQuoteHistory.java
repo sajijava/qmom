@@ -81,8 +81,15 @@ public class DownloadQuoteHistory {
                 if(line.contains("Close") || StringUtils.isEmpty(line) || StringUtils.isBlank(line)) continue;
 
                 //logger.debug("{}",line);
-                Quote  quote = makeQuote(symbol,line);
-                if(quote != null ) quoteHist.add(quote);
+                try {
+                    Quote quote = makeQuote(symbol, line);
+                    if(quote != null ) quoteHist.add(quote);
+
+                }catch (Exception e)
+                {
+                    logger.debug("{}\n{}",line,e.getMessage());
+                    throw e;
+                }
 
             }
             if(!quoteHist.isEmpty()) {

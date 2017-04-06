@@ -157,15 +157,15 @@ public class DBAccess {
 
     public List<Quote> getQuoteFromDate(String symbol,Date date) throws SQLException {
 
-        String getQuoteStmt = "select * from qmom.quote where symbol = ?  and MONTH(date) >= ? and YEAR(date) >= ? order by date";
+        String getQuoteStmt = "select * from qmom.quote where symbol = ?  and date >= ? order by date";
         PreparedStatement getQuotePrepareStmt = conn.prepareStatement(getQuoteStmt);
 
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
 
         getQuotePrepareStmt.setString(1,symbol);
-        getQuotePrepareStmt.setInt(2,cal.get(Calendar.MONTH));
-        getQuotePrepareStmt.setInt(3,cal.get(Calendar.YEAR));
+        getQuotePrepareStmt.setDate(2,date);
+
 
         ResultSet rs = getQuotePrepareStmt.executeQuery();
         List<Quote> quoteList = makeQuoteList(rs);
